@@ -67,7 +67,7 @@ mod tests {
         a: Vec<i32>,
         b: Vec<f64>,
         c: &'a [i32],
-        d: [i32],
+        // d: [i32],
     }
 
     #[test]
