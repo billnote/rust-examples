@@ -61,4 +61,25 @@ mod tests {
         // 所以通常我们使用的都是`str`的引用`&str`
         // let name: str;
     }
+
+    use std::mem::size_of;
+    struct MyVec<'a> {
+        a: Vec<i32>,
+        b: Vec<f64>,
+        c: &'a [i32],
+        d: [i32],
+    }
+
+    #[test]
+    fn size_of_test() {
+        println!("Vec<i32> size: {}", size_of::<Vec<i32>>());
+        println!("Vec<f64> size: {}", size_of::<Vec<f64>>());
+        println!("sized slice i32 size: {}", size_of::<&[i32; 3]>());
+        println!("unsized slice i32 size: {}", size_of::<&[i32]>());
+        println!("MyVec size: {}", size_of::<MyVec>());
+        println!("MyVec ref size: {}", size_of::<&MyVec>());
+
+        //dbg!("dyn size: {}", size_of::<&(dyn ToString + Clone)>()); compile error
+        dbg!("dyn size: {}", size_of::<&(dyn Send + Sync)>());
+    }
 }

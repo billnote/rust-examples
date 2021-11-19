@@ -30,8 +30,7 @@ mod tests {
             // 出现错误[E0502]，此处已经有一个可变引用，不能在使用`x`这个可变引用。
             // 具体原因就需要了解可变引用的使用规则了，下述内容会做说明。
             // println!("x value is: {}", x);
-        }   // 为何这里需要括号那？ 删除会发生什么？
-
+        } // 为何这里需要括号那？ 删除会发生什么？
 
         // 删除括号后，引用操作似乎都正常，但是在println x时出现错误了。
         // 错误仍然是[E0502]，其实产生错误的原因也是一样的。
@@ -72,7 +71,7 @@ mod tests {
         }
 
         let mut v = vec!["a".to_string(), "b".to_string()];
-        for mut s in &mut v{
+        for mut s in &mut v {
             s.push_str(" new");
         }
         // 这里为何可以再次被引用？ 这就涉及到作用域的知识点了。
@@ -108,7 +107,5 @@ mod tests {
     }
 
     #[test]
-    fn scopes_test() {
-
-    }
+    fn scopes_test() {}
 }

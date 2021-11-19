@@ -1,0 +1,9 @@
+[package]
+name = "async-demo"
+version = "0.1.0"
+authors = ["bill.huang <huangshb@yoozoo.com>"]
+edition = "2018"
+
+[dependencies]
+futures = { version = "=0.3", features = ["thread-pool"]}
+hyper = "0.12.31"

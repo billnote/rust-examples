@@ -4,8 +4,8 @@ pub fn say_hello() {
 
 #[cfg(test)]
 mod tests {
-    use std::{thread, time};
     use std::sync::mpsc;
+    use std::{thread, time};
 
     #[test]
     fn thread_test() {
@@ -19,12 +19,9 @@ mod tests {
         new_spawn_thread.join().unwrap();
 
         // 2. builder
-        let new_builder_thread = thread::Builder::new()
-            .name("builder thread".to_string())
-            .stack_size(4 * 1024 * 1024)
-            .spawn(move || {
-                println!("I am builder thread");
-            });
+        let new_builder_thread = thread::Builder::new().name("builder thread".to_string()).stack_size(4 * 1024 * 1024).spawn(move || {
+            println!("I am builder thread");
+        });
         new_builder_thread.unwrap().join().unwrap();
         // 通过builder创建线程可以指定名称和栈大小
     }
@@ -48,7 +45,6 @@ mod tests {
         // 1. start send
         // 3. receive: hello sync channel
         // 2. end send
-
 
         // 2. 异步通道，一个异步发送者，一个接收者
         let (tx, rx): (mpsc::Sender<String>, mpsc::Receiver<String>) = mpsc::channel();

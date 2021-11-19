@@ -87,7 +87,7 @@ mod tests {
         // 拆解一下`*Rc::make_mut(&mut x) += 1;`
         {
             let xm: &mut i32 = Rc::make_mut(&mut x);
-            *xm = *xm + 1;
+            *xm += 1;
         }
         println!("mut rc x value is:{}", *x);
     }
@@ -131,17 +131,13 @@ mod tests {
                     // copy 出新内容，内存地址不同
                     *Arc::make_mut(&mut child_number) += 1;
                 }
-                println!("thread child number: {}, address: {:?}",
-                         child_number,
-                         &*child_number as *const i32);
+                println!("thread child number: {}, address: {:?}", child_number, &*child_number as *const i32);
                 thread::sleep(time::Duration::from_millis(100));
             });
         }
 
         println!("thread number: {}", thread_number);
         thread::sleep(time::Duration::from_secs(3));
-        println!("thread number: {}, address: {:?}",
-                 thread_number,
-                 &*thread_number as *const i32);
+        println!("thread number: {}, address: {:?}", thread_number, &*thread_number as *const i32);
     }
 }

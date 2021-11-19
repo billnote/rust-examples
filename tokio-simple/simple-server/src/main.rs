@@ -6,15 +6,17 @@ extern crate tokio_io;
 extern crate bytes;
 
 use std::{io, str};
+use std::thread;
 use std::borrow::Borrow;
 
 use tokio_io::{AsyncRead, AsyncWrite};
 use tokio_io::codec::{Decoder, Encoder, Framed};
 use tokio_proto::pipeline::ServerProto;
 use tokio_proto::TcpServer;
-use tokio_service::Service;
-
-use futures::{future, Future, BoxFuture};
+use tokio_service::{Service, NewService};
+use tokio_core::reactor::Core;
+use tokio_core::net::TcpListener;
+use futures::{future, Future, Stream, Sink};
 
 use bytes::{BytesMut, BufMut};
 
@@ -67,7 +69,30 @@ impl<T: AsyncRead + AsyncWrite + 'static> ServerProto<T> for LineProto {
     }
 }
 
+fn serve<S>(s: S) -> io::Result<()>
+where
+    S: NewService<Request = String, Response = String, Error = io::Error> + 'static,
+{
+    let mut core = Core::new()?;
+    let handle = core.handle();
 
+    let address = "0.0.0.0:9999".parse().unwrap();
+    let listener = TcpListener::bind(&address, &handle)?;
+
+    let connectios = listener.incoming();
+    let server = connectios.for_each(move |(socket, _perr_addr)| {
+        let (writer, reader) = socket.framed(LineCodec).split();
+        let service = s.new_service()?;
+
+        let responses = reader.and_then(move |req| service.call(req));
+        let server = writer.send_all(responses).then(|_| Ok(()));
+        handle.spawn(server);
+
+        Ok(())
+    });
+
+    core.run(server)
+}
 
 // 服务层
 pub struct Echo;
@@ -78,16 +103,26 @@ impl Service for Echo {
 
     type Error = io::Error;
 
-    type Future = BoxFuture<Self::Response, Self::Error>;
+    type Future = Box<Future<Item = Self::Response, Error = Self::Error>>;
 
     fn call(&self, req: Self::Request) -> Self::Future {
         // do somethings here
-        future::ok(req).boxed()
+        Box::new(future::ok(req.chars().rev().collect()))
     }
 }
 
 fn main() {
-    println!("Hello, world!");
+    let old = thread::spawn(move || echo_run());
+    let new = thread::spawn(move || serve(|| Ok(Echo)));
+    old.join().unwrap();
+    new.join().unwrap();
+    // if let Err(e) = serve(|| Ok(Echo)) {
+    //     println!("Server failed with {}", e);
+    // }
+}
+
+fn echo_run() {
+    println!("hello echo!");
 
     let addr = "0.0.0.0:12345".parse().unwrap();
     let server = TcpServer::new(LineProto, addr);
